@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boston Tea Challenge</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:title" content="Boston Tea Challenge">
+<meta property="og:image" content="logo_square.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+/* =========================================================
+   BOSTON TEA CHALLENGE — a DorkTeach classroom game
+   ========================================================= */
+:root{
+  --parch:#f4ecd8; --parch2:#ead9b5; --ink:#5c4033; --accent:#8b5a2b;
+  --dark:#3b2a1f; --good:#4f7a3a; --bad:#a8452f; --gold:#c9962b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:#2b1e15;color:var(--ink);
+  font-family:'IM Fell English',Georgia,'Times New Roman',serif;}
+button{font-family:inherit}
+#app{position:relative;max-width:1000px;margin:0 auto;min-height:640px;
+  background:var(--parch);
+  background-image:radial-gradient(ellipse at center,rgba(255,255,255,.35),rgba(139,90,43,.18) 80%),
+    repeating-linear-gradient(0deg,rgba(92,64,51,.025) 0 2px,transparent 2px 5px);
+  box-shadow:inset 0 0 80px rgba(92,64,51,.45);overflow:hidden;user-select:none;-webkit-user-select:none}
+.screen{display:none;padding:18px 22px 40px;min-height:640px;position:relative}
+.screen.active{display:block}
+h1,h2,h3{font-family:'IM Fell English SC',Georgia,serif;margin:.2em 0;color:var(--dark)}
+.btn{background:var(--accent);color:var(--parch);border:3px solid var(--dark);border-radius:10px;
+  padding:10px 22px;font-size:20px;cursor:pointer;box-shadow:0 4px 0 var(--dark);transition:transform .08s}
+.btn:hover{filter:brightness(1.1)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--dark)}
+.btn.big{font-size:30px;padding:12px 46px;font-family:'IM Fell English SC',Georgia,serif}
+.btn.small{font-size:15px;padding:6px 12px;box-shadow:0 3px 0 var(--dark)}
+.btn.ghost{background:var(--parch2);color:var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.6)}
+#muteBtn{position:absolute;top:10px;right:12px;z-index:50;font-size:22px;padding:4px 10px}
+.wallet{position:absolute;top:12px;left:16px;z-index:40;font-size:18px;background:var(--parch2);
+  border:2px solid var(--accent);border-radius:8px;padding:3px 10px}
+.footer{position:absolute;bottom:8px;left:0;right:0;text-align:center;font-size:13px;opacity:.7}
+
+/* ---------- Intro ---------- */
+#intro{text-align:center}
+#logoWrap{margin:30px auto 6px;max-width:640px}
+#logoWrap img{width:100%;display:block;filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))}
+#logoFallback{display:none;font-size:56px;line-height:1}
+.introText{max-width:700px;margin:14px auto 22px;font-size:21px;line-height:1.45;background:rgba(255,255,255,.35);
+  border:2px dashed var(--accent);border-radius:12px;padding:14px 20px;font-style:italic}
+.introRow{display:flex;gap:16px;justify-content:center;align-items:center;flex-wrap:wrap;margin:12px 0}
+.codeBox{display:flex;gap:8px;align-items:center;background:var(--parch2);border:2px solid var(--accent);border-radius:10px;padding:8px 12px}
+.codeBox label{font-family:'IM Fell English SC',serif;font-size:18px}
+.codeBox input{font-family:inherit;font-size:20px;width:150px;padding:5px 8px;border:2px solid var(--ink);border-radius:6px;background:var(--parch);color:var(--ink);text-transform:uppercase;letter-spacing:3px}
+#introTea{position:absolute;width:120px;bottom:30px;right:30px;opacity:.9;animation:bob 2.4s ease-in-out infinite;pointer-events:none}
+#introTea2{position:absolute;width:90px;bottom:40px;left:34px;opacity:.85;transform:scaleX(-1);animation:bob 2.9s ease-in-out infinite;pointer-events:none}
+
+/* ---------- Select ---------- */
+#select h2{text-align:center;font-size:34px;margin-top:22px}
+.selCols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.panel{background:rgba(255,255,255,.3);border:2px solid var(--accent);border-radius:12px;padding:8px 10px 10px}
+.panel h3{font-size:22px;margin:0 0 6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:7px}
+.card{position:relative;background:var(--parch);border:2px solid var(--ink);border-radius:9px;padding:4px 3px 3px;text-align:center;cursor:pointer;font-size:12.5px;line-height:1.1;transition:transform .1s}
+.card:hover{transform:translateY(-2px)}
+.card .thumb{width:62px;height:62px;margin:0 auto 2px;display:flex;align-items:center;justify-content:center}
+.card .thumb img{max-width:62px;max-height:62px;object-fit:contain}
+.card.sel{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold);background:#fff6dc}
+.card.locked .thumb{filter:grayscale(1) brightness(.6) sepia(.4)}
+.card .lock{display:block;font-size:11.5px;color:var(--bad);margin-top:2px;font-weight:bold}
+.stageGrid{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
+.stageCard{position:relative;border:2px solid var(--ink);border-radius:9px;overflow:hidden;cursor:pointer;height:84px;
+  background:#8b5a2b center/cover no-repeat;display:flex;align-items:flex-end}
+.stageCard span{display:block;width:100%;background:rgba(244,236,216,.9);font-size:13px;text-align:center;padding:2px}
+.stageCard.sel{box-shadow:0 0 0 3px var(--gold);border-color:var(--gold)}
+.stageCard.locked{filter:grayscale(1) brightness(.7)}
+.stageCard .lock{position:absolute;top:4px;left:0;right:0;text-align:center;color:#fff;font-size:12px;text-shadow:0 1px 3px #000;font-weight:bold}
+.selBottom{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:10px;flex-wrap:wrap}
+.timerPick button{margin-right:4px}
+.timerPick button.sel{background:var(--gold);color:var(--dark)}
+.vsLine{font-size:20px;text-align:center;flex:1}
+
+/* ---------- Match ---------- */
+#match{padding:0}
+.hud{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;padding:10px 70px 8px 14px;
+  background:var(--parch2);border-bottom:3px solid var(--accent)}
+.hudSide{display:flex;align-items:center;gap:10px}
+.hudSide.right{justify-content:flex-end;text-align:right}
+.hudName{font-family:'IM Fell English SC',serif;font-size:19px}
+.teaLbl{font-size:12px;letter-spacing:2px;text-transform:uppercase}
+.teaNum{font-family:'IM Fell English SC',serif;font-size:46px;line-height:.9;color:var(--accent);text-shadow:2px 2px 0 rgba(0,0,0,.15)}
+.teaNum.pop{animation:pop .4s}
+.clock{text-align:center;background:var(--ink);color:var(--parch);border-radius:12px;padding:4px 18px;border:3px solid var(--dark)}
+.clock .t{font-family:'IM Fell English SC',serif;font-size:40px;line-height:1}
+.clock .s{font-size:12px;opacity:.85}
+.clock.low .t{color:#ffb38a;animation:pulse .5s infinite alternate}
+#arena{position:relative;height:340px;overflow:hidden;background:#a97c50 center/cover no-repeat}
+#arenaTint{position:absolute;inset:0;background:linear-gradient(rgba(244,236,216,.15),rgba(92,64,51,.35));pointer-events:none}
+#arenaFallback{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-family:'IM Fell English SC',serif;font-size:42px;color:rgba(244,236,216,.6)}
+#ground{position:absolute;left:0;right:0;bottom:0;height:34px;background:linear-gradient(rgba(92,64,51,.0),rgba(59,42,31,.55))}
+#table{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);width:150px;height:70px}
+#banner{position:absolute;top:12px;left:50%;transform:translateX(-50%);background:var(--parch);border:3px solid var(--dark);
+  border-radius:10px;padding:6px 18px;font-family:'IM Fell English SC',serif;font-size:24px;white-space:nowrap;z-index:20;box-shadow:0 4px 10px rgba(0,0,0,.3)}
+#bigText{position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);font-family:'IM Fell English SC',serif;font-size:80px;color:var(--parch);
+  text-shadow:4px 4px 0 var(--dark),-2px -2px 0 var(--dark);z-index:30;pointer-events:none;display:none}
+#bigText.show{display:block;animation:slam .6s}
+
+/* fighters */
+.fwrap{position:absolute;bottom:10px;width:220px;height:330px}
+.fwrap.p{left:9%}
+.fwrap.c{right:9%}
+.fighter{position:absolute;inset:0}
+.fwrap.c .fighter{transform:scaleX(-1)}
+.fighter .head{position:absolute;left:40px;top:6px;width:140px;height:140px;z-index:3;transform-origin:50% 85%;animation:bob 1.1s ease-in-out infinite}
+.fighter .head img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 3px 3px rgba(0,0,0,.35))}
+.fighter .bodysvg{position:absolute;left:0;top:118px;width:220px;height:205px;z-index:1;animation:sway 1.1s ease-in-out infinite;transform-origin:50% 100%}
+.fighter .arm{position:absolute;left:144px;top:165px;width:22px;height:85px;transform-origin:11px 0;z-index:4;transform:rotate(14deg);transition:transform .15s}
+.fighter .arm .sleeve{position:absolute;left:0;top:0;width:22px;height:62px;border-radius:11px;border:2px solid var(--dark)}
+.fighter .arm .cuff{position:absolute;left:-1px;top:54px;width:24px;height:10px;background:#f7f3ea;border:2px solid var(--dark);border-radius:4px}
+.fighter .arm .hand{position:absolute;left:1px;top:62px;width:20px;height:20px;border-radius:50%;background:#f1c8a5;border:2px solid var(--dark)}
+.fighter .arm .cup{position:absolute;left:-24px;top:58px;width:46px;height:36px}
+.fighter .cupfloat{display:none}
+/* full-body sprites */
+.fighter.full .bodysvg,.fighter.full .arm{display:none}
+.fighter.full .head{left:10px;top:40px;width:200px;height:285px;transform-origin:50% 100%}
+.fighter.full .cupfloat{display:block;position:absolute;left:150px;top:180px;width:54px;height:42px;z-index:4;animation:bob 1.3s ease-in-out infinite}
+/* states */
+.fighter.drink .arm{animation:sip var(--beat,.65s) ease-in-out infinite}
+.fighter.drink .head{animation:tilt var(--beat,.65s) ease-in-out infinite}
+.fighter.full.drink .cupfloat{animation:cupSip var(--beat,.65s) ease-in-out infinite}
+.fighter.special .head{animation:wobble .25s ease-in-out infinite}
+.fighter.special .arm{animation:sip .25s ease-in-out infinite}
+.fighter.full.special .cupfloat{animation:cupSip .25s ease-in-out infinite}
+.fighter.special{filter:drop-shadow(0 0 14px #ffd76a)}
+.fighter.fail .head{animation:shake .12s linear 6}
+.fighter.fail .arm{transform:rotate(60deg)}
+.fighter.cheer{animation:jump .45s ease-out 3}
+.fwrap.c .fighter.cheer{animation:jumpFlip .45s ease-out 3}
+.fighter.sad .head{transform:rotate(14deg) translateY(10px);animation:none}
+.bubble{position:absolute;bottom:215px;left:50%;transform:translateX(-50%) scale(0);transform-origin:50% 100%;width:230px;background:#fffdf6;
+  border:3px solid var(--dark);border-radius:16px;padding:7px 10px;font-size:17px;text-align:center;z-index:25;transition:transform .2s;line-height:1.15}
+.bubble::after{content:'';position:absolute;bottom:-14px;left:50%;margin-left:-10px;border:10px solid transparent;border-top:12px solid var(--dark)}
+.bubble.show{transform:translateX(-50%) scale(1)}
+.fwrap.p .bubble{left:calc(100% + 70px)}
+.fwrap.c .bubble{left:-70px}
+.bubble::after{left:20%}
+.fwrap.c .bubble::after{left:80%}
+.teaNum,.clock .t,.resScores b,.wallet,.miniTime{font-family:"Times New Roman",Times,serif !important;font-weight:bold}
+.float{position:absolute;left:50%;top:40px;transform:translateX(-50%);font-family:'IM Fell English SC',serif;font-size:34px;color:#fff6c8;
+  text-shadow:2px 2px 0 var(--dark),-1px -1px 0 var(--dark);animation:floatUp 1.3s ease-out forwards;z-index:26;pointer-events:none;white-space:nowrap}
+.float.bad{color:#ffb3a3}
+.drop{position:absolute;width:12px;height:16px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:#9a5b22;border:1px solid #5c3511;z-index:24;animation:splash .8s ease-out forwards;pointer-events:none}
+.faceFB{width:100%;height:100%;border-radius:50%;background:#f1c8a5;border:3px solid var(--dark);position:relative;display:flex;align-items:center;justify-content:center;
+  font-family:'IM Fell English SC',serif;font-size:34px;color:var(--dark)}
+.faceFB::before,.faceFB::after{content:'';position:absolute;top:34%;width:10%;height:10%;border-radius:50%;background:var(--dark)}
+.faceFB::before{left:28%}.faceFB::after{right:28%}
+.faceFB span{position:absolute;bottom:18%;font-size:.6em}
+
+/* bottom panel */
+#panel{background:var(--parch2);border-top:3px solid var(--accent);min-height:196px;padding:10px 14px}
+#moves{display:flex;gap:12px;justify-content:center}
+.move{flex:1;max-width:280px;background:var(--parch);border:3px solid var(--dark);border-radius:12px;padding:10px;cursor:pointer;text-align:center;box-shadow:0 4px 0 var(--dark)}
+.move:hover{background:#fff7e2}
+.move:active{transform:translateY(3px);box-shadow:0 1px 0 var(--dark)}
+.move .mt{font-family:'IM Fell English SC',serif;font-size:26px}
+.move .md{font-size:14px}
+.move .mk{display:inline-block;background:var(--ink);color:var(--parch);border-radius:5px;padding:0 7px;font-size:14px;margin-bottom:3px}
+.move.disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.hint{text-align:center;font-size:14px;margin-top:8px;opacity:.85}
+#mini{display:none}
+.lane{position:relative;height:96px;background:var(--parch);border:3px solid var(--dark);border-radius:48px;overflow:hidden;cursor:pointer;margin-top:4px}
+.lane .zone{position:absolute;left:28px;top:12px;width:66px;height:66px;border-radius:50%;border:4px dashed var(--accent);background:rgba(201,150,43,.18)}
+.lane .track{position:absolute;left:60px;right:20px;top:45px;height:2px;background:rgba(92,64,51,.25)}
+.note{position:absolute;top:16px;width:58px;height:58px;margin-left:-29px;border-radius:50%;background:var(--accent);color:var(--parch);border:3px solid var(--dark);
+  display:flex;align-items:center;justify-content:center;font-family:'IM Fell English SC',serif;font-size:30px;box-shadow:0 3px 0 var(--dark)}
+.note.hit{background:var(--good);transform:scale(1.25);opacity:0;transition:all .25s}
+.note.miss{background:var(--bad);opacity:.3}
+.judge{position:absolute;left:62px;top:-4px;font-family:'IM Fell English SC',serif;font-size:26px;z-index:5;animation:floatUp .7s ease-out forwards;pointer-events:none}
+.miniHead{display:flex;justify-content:space-between;align-items:baseline}
+.miniTitle{font-family:'IM Fell English SC',serif;font-size:24px}
+.miniTime{font-size:22px;font-family:'IM Fell English SC',serif}
+.bar{height:26px;border:3px solid var(--dark);border-radius:14px;background:var(--parch);overflow:hidden;margin:6px 0}
+.bar div{height:100%;width:0;background:linear-gradient(90deg,#8b5a2b,#c9962b);transition:width .08s}
+.mashRow{display:flex;gap:14px;justify-content:center;margin-top:6px}
+.mashBtn{min-width:140px;font-family:'IM Fell English SC',serif;font-size:34px;padding:8px 18px;border-radius:14px;border:3px solid var(--dark);background:var(--parch);color:var(--ink);cursor:pointer;box-shadow:0 5px 0 var(--dark)}
+.mashBtn.next{background:var(--gold);color:var(--dark)}
+.mashBtn:active,.mashBtn.flash{transform:translateY(4px);box-shadow:0 1px 0 var(--dark)}
+.seqRow{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin:6px 0}
+.seqL{width:38px;height:44px;border:2px solid var(--dark);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'IM Fell English SC',serif;font-size:26px;background:var(--parch)}
+.seqL.done{background:var(--good);color:#fff}
+.seqL.cur{background:var(--gold);transform:scale(1.15)}
+.seqRow.wrong{animation:shake .1s 3}
+.seqKeys{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.seqKeys button{width:46px;height:42px;font-size:22px;border-radius:8px;border:2px solid var(--dark);background:var(--parch2);cursor:pointer;font-family:'IM Fell English SC',serif}
+
+/* ---------- Results ---------- */
+#results{text-align:center}
+.resBanner{margin:34px auto 6px;font-family:'IM Fell English SC',serif;font-size:40px;line-height:1.1;padding:14px 18px;border:4px double var(--dark);border-radius:12px;max-width:820px}
+.resBanner.win{background:#e7f0d4;color:#2f4d1f}
+.resBanner.lose{background:#f3d9cf;color:#6e2414}
+.resBanner.tie{background:var(--parch2)}
+.resScores{display:flex;justify-content:center;gap:40px;margin:10px 0;font-size:20px}
+.resScores b{font-family:'IM Fell English SC',serif;font-size:38px;color:var(--accent);display:block}
+.resReward{font-size:20px;margin:4px 0 10px}
+.unlockNote{display:inline-block;background:var(--gold);color:var(--dark);border-radius:8px;padding:4px 12px;margin:4px;font-weight:bold}
+.learn{max-width:820px;margin:8px auto 14px;text-align:left;background:#fffaf0;border:3px solid var(--accent);border-radius:12px;padding:12px 18px;font-size:16.5px;line-height:1.4;max-height:270px;overflow:auto}
+.learn h3{font-size:24px;text-align:center;margin-top:0}
+.learn p{margin:.45em 0}
+.learn .fact{background:var(--parch2);border-radius:8px;padding:6px 10px;font-style:italic}
+
+/* ---------- Modal / toast ---------- */
+#modal{position:absolute;inset:0;background:rgba(43,30,21,.6);display:none;align-items:center;justify-content:center;z-index:100}
+#modal.show{display:flex}
+.modalBox{background:var(--parch);border:4px solid var(--dark);border-radius:14px;padding:16px 20px;width:min(92%,720px);max-height:92%;overflow:auto;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.modalBox h2{text-align:center}
+.arow{display:grid;grid-template-columns:150px 1fr auto auto;gap:8px;align-items:center;padding:5px 0;border-bottom:1px dashed rgba(92,64,51,.35);font-size:15px}
+.arow .st{font-size:13px}
+.ok{color:var(--good)} .no{color:var(--bad)} .cu{color:var(--gold)}
+.upl{font-size:12px;max-width:190px}
+#toast{position:absolute;bottom:18px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--ink);color:var(--parch);border-radius:10px;padding:9px 18px;font-size:17px;z-index:200;transition:transform .3s;max-width:90%;text-align:center}
+#toast.show{transform:translateX(-50%) translateY(0)}
+
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-7px) rotate(3deg)}}
+@keyframes sway{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(1.5deg) scaleY(.98)}}
+@keyframes sip{0%,100%{transform:rotate(14deg)}45%,60%{transform:rotate(138deg)}}
+@keyframes cupSip{0%,100%{transform:translate(0,0) rotate(0)}50%{transform:translate(-50px,-120px) rotate(-70deg)}}
+@keyframes tilt{0%,100%{transform:rotate(0)}45%,60%{transform:rotate(-14deg) translateY(-4px)}}
+@keyframes wobble{0%,100%{transform:rotate(-10deg) scale(1.05)}50%{transform:rotate(10deg) scale(1.12)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px) rotate(-6deg)}75%{transform:translateX(8px) rotate(6deg)}}
+@keyframes jump{0%,100%{transform:translateY(0)}50%{transform:translateY(-28px)}}
+@keyframes jumpFlip{0%,100%{transform:scaleX(-1) translateY(0)}50%{transform:scaleX(-1) translateY(-28px)}}
+@keyframes floatUp{0%{opacity:0;transform:translate(-50%,10px) scale(.7)}20%{opacity:1;transform:translate(-50%,0) scale(1.1)}100%{opacity:0;transform:translate(-50%,-60px) scale(1)}}
+@keyframes splash{0%{transform:translate(0,0) scale(.6);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(1);opacity:0}}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.35)}100%{transform:scale(1)}}
+@keyframes pulse{from{opacity:1}to{opacity:.5}}
+@keyframes slam{0%{transform:translate(-50%,-50%) scale(3);opacity:0}60%{transform:translate(-50%,-50%) scale(.9);opacity:1}100%{transform:translate(-50%,-50%) scale(1)}}
+@media (max-width:760px){
+  .selCols{grid-template-columns:1fr}
+  .stageGrid{grid-template-columns:repeat(4,1fr)}
+  .fwrap{transform:scale(.75);transform-origin:bottom center}
+  .fwrap.p{left:0}.fwrap.c{right:0}
+  .teaNum{font-size:34px}
+  .hud{padding-right:60px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <button id="muteBtn" class="btn small ghost" title="Mute / unmute">🔊</button>
+
+  <!-- ================= INTRO ================= -->
+  <section id="intro" class="screen active">
+    <div id="logoWrap">
+      <img id="logoImg" src="logo.png" alt="Boston Tea Challenge">
+      <h1 id="logoFallback">Boston Tea Challenge</h1>
+    </div>
+    <div class="introText">"The year is 1783, the American Revolutionary War has just been won by the colonists. To celebrate, the founding fathers, some presidents from the future, and other guys match each other in a tea-drinking competition taking place in Boston (and possibly other parts of the world)."</div>
+    <div class="introRow">
+      <button class="btn big" id="playBtn">PLAY</button>
+    </div>
+    <div class="introRow">
+      <div class="codeBox">
+        <label for="codeInput">SECRET CODES</label>
+        <input id="codeInput" maxlength="12" autocomplete="off" spellcheck="false" placeholder="????">
+        <button class="btn small" id="codeBtn">Enter</button>
+      </div>
+      <button class="btn ghost" id="audioBtn">🎵 AUDIO SETTINGS</button>
+    </div>
+    <img id="introTea" src="tea.png" alt="" onerror="this.remove()">
+    <img id="introTea2" src="tea.png" alt="" onerror="this.remove()">
+    <div class="footer">A DorkTeach classroom game</div>
+  </section>
+
+  <!-- ================= SELECT ================= -->
+  <section id="select" class="screen">
+    <div class="wallet" id="wallet1"></div>
+    <h2>Choose Your Tea-Drinkers</h2>
+    <div class="selCols">
+      <div class="panel"><h3>🫖 You</h3><div class="grid" id="pGrid"></div></div>
+      <div class="panel"><h3>🤖 CPU Opponent</h3><div class="grid" id="cGrid"></div></div>
+    </div>
+    <div class="panel" style="margin-top:12px"><h3>🏛️ Stage</h3><div class="stageGrid" id="sGrid"></div></div>
+    <div class="selBottom">
+      <div class="timerPick" id="timerPick">
+        <b>Match timer:</b>
+        <button class="btn small ghost" data-t="30">30s</button>
+        <button class="btn small ghost" data-t="60">60s</button>
+        <button class="btn small ghost" data-t="90">90s</button>
+      </div>
+      <div class="vsLine" id="vsLine"></div>
+      <div>
+        <button class="btn small ghost" id="backIntro">◀ Back</button>
+        <button class="btn big" id="startBtn">START!</button>
+      </div>
+    </div>
+    <div class="footer">A DorkTeach classroom game · <a href="#" id="resetLink" style="color:inherit">reset progress</a></div>
+  </section>
+
+  <!-- ================= MATCH ================= -->
+  <section id="match" class="screen">
+    <div class="hud">
+      <div class="hudSide"><div><div class="hudName" id="pName"></div><div class="teaLbl">Tea Consumed</div><div class="teaNum" id="pTea">0</div></div></div>
+      <div class="clock" id="clock"><div class="t" id="clockT">1:00</div><div class="s" id="stageName"></div></div>
+      <div class="hudSide right"><div><div class="hudName" id="cName"></div><div class="teaLbl">Tea Consumed</div><div class="teaNum" id="cTea">0</div></div></div>
+    </div>
+    <div id="arena">
+      <div id="arenaFallback"></div>
+      <div id="arenaTint"></div>
+      <div id="ground"></div>
+      <svg id="table" viewBox="0 0 150 70">
+        <ellipse cx="75" cy="14" rx="72" ry="12" fill="#7a4a24" stroke="#3b2a1f" stroke-width="3"/>
+        <rect x="66" y="22" width="18" height="44" fill="#6a3e1d" stroke="#3b2a1f" stroke-width="3"/>
+        <g transform="translate(52,-22)">
+          <ellipse cx="23" cy="30" rx="20" ry="15" fill="#f7f1e3" stroke="#3b2a1f" stroke-width="2.5"/>
+          <path d="M41 26 Q56 18 54 8" stroke="#3b2a1f" stroke-width="3" fill="none"/>
+          <path d="M5 26 Q-6 30 1 38" stroke="#3b2a1f" stroke-width="3" fill="none"/>
+          <rect x="17" y="11" width="12" height="5" rx="2" fill="#c9962b" stroke="#3b2a1f" stroke-width="2"/>
+          <path d="M12 30 h22" stroke="#8b5a2b" stroke-width="2"/>
+        </g>
+      </svg>
+      <div id="banner">Get ready!</div>
+      <div id="bigText"></div>
+    </div>
+    <div id="panel">
+      <div id="moves">
+        <div class="move" data-m="drink"><span class="mk">1</span><div class="mt">Drink</div><div class="md">3 timed beats · up to +1 tea</div></div>
+        <div class="move" data-m="chug"><span class="mk">2</span><div class="mt">Chug</div><div class="md">6 faster beats · up to +3 tea</div></div>
+        <div class="move" data-m="special" id="specialBtn"><span class="mk">3</span><div class="mt" id="specialName">Special</div><div class="md" id="specialDesc">up to +8 tea</div></div>
+      </div>
+      <div id="mini"></div>
+      <div class="hint" id="hint">Pick a move: click it, or press 1, 2 or 3. The clock keeps ticking!</div>
+    </div>
+  </section>
+
+  <!-- ================= RESULTS ================= -->
+  <section id="results" class="screen">
+    <div class="wallet" id="wallet2"></div>
+    <div class="resBanner" id="resBanner"></div>
+    <div class="resScores" id="resScores"></div>
+    <div class="resReward" id="resReward"></div>
+    <div class="learn" id="learn"></div>
+    <div class="introRow">
+      <button class="btn" id="rematchBtn">🔁 Rematch</button>
+      <button class="btn ghost" id="toSelectBtn">Change Drinkers</button>
+    </div>
+    <div class="footer">A DorkTeach classroom game</div>
+  </section>
+
+  <div id="modal"><div class="modalBox" id="modalBox"></div></div>
+  <div id="toast"></div>
+</div>
+
+<script>
+/* =====================================================================
+   SETTINGS
+   ASSET_BASE: leave '' when the HTML file sits in the same folder as the
+   images and sounds. When embedding in Google Sites, upload the folder
+   somewhere public (e.g. your own website) and put that address here,
+   e.g. 'https://dorkteach.com/games/boston-tea/'
+   ===================================================================== */
+const ASSET_BASE = '';
+const asset = n => ASSET_BASE + n;
+
+/* ============================ DATA ============================ */
+const MAX = {drink:1, chug:3, special:8};
+const KEYS = ['A','S','D','F','J','K','L'];
+
+const CHARS = [
+ {id:'jefferson',name:'Thomas Jefferson',img:'jefferson.png',coat:'#3d5a80',trim:'#c9962b',unlock:{type:'start'},
+  special:{name:'Declaration Draft',type:'seq',seq:'DECLARATION',time:6.5,desc:'Type the word in order'},
+  drink:["We hold this tea to be self-evident!","Life, liberty, and the pursuit of a refill!","Monticello brews it better, but this will do.","A well-steeped cup is the foundation of a republic.","I declare this cup... empty!","Pass the quill — I must write about this flavor.","Smooth as a freshly drafted sentence.","An inquiring mind requires a full cup.","Ah, that's a Founding Flavor.","One more cup and I'll redesign the nickel."],
+  fail:["I must revise this sip... draft two.","That went down the wrong colony.","Even my writing desk spilled less.","A grievance! I shall list it with the others.","Too hot for independence.","My wig is drenched with Earl Grey.","This cup was not self-evident.","Hold on, I am still editing that gulp.","Monticello never had cups this slippery.","I pursued happiness and tripped."]},
+ {id:'franklin',name:'Benjamin Franklin',img:'benjamin.png',coat:'#7a5c3a',trim:'#e0c38c',unlock:{type:'start'},
+  special:{name:'Lightning Kite Chug',type:'mash',key:' ',target:32,time:5,desc:'Mash SPACE like lightning'},
+  drink:["A penny saved is a teacup earned!","Early to bed, early to brew!","Shocking flavor — and I know shocking.","Well done is better than well said. Slurp!","I invented bifocals just to see this cup better.","Electrifying!","An ounce of tea is worth a pound of cure.","Poor Richard says: drink up!","Lightning in a cup!","Paris taught me to sip with style."],
+  fail:["Note to self: invent a non-spill cup.","That experiment did not go to plan.","My kite got more tea than I did.","Haste makes waste... and puddles.","I've been struck by... embarrassment.","Somebody fetch a mop, posthaste!","Even my bifocals are soggy.","Lost a sip — lost the whole cup.","Ahem. A scientific splash, on purpose.","That's one for the almanac of failures."]},
+ {id:'washington',name:'George Washington',img:'washington.png',coat:'#2f4a7a',trim:'#d9b56a',unlock:{type:'start'},
+  special:{name:'Delaware Row-Chug',type:'alt',keys:['A','D'],target:30,time:5,desc:'Row! Alternate A and D'},
+  drink:["I cannot tell a lie — this tea is good!","Forward, Continental tongue!","First in war, first in peace, first in tea!","Crossing the Delaware was harder than this.","A commander must stay hydrated.","Victory tastes like Darjeeling.","Steady hands, steady sips.","To the troops! And to this teapot!","Valley Forge was cold. This tea is not.","That's the Mount Vernon special!"],
+  fail:["I cannot tell a lie... I spilled it.","Retreat! Regroup! Refill!","That cup crossed the wrong river.","Not my finest campaign.","Fetch a mop, Lieutenant.","Even at Valley Forge I kept my cup dry.","A tactical spill. Totally planned.","My teeth... they are fine. Mostly.","Whoa, that tea fought back!","Tell the troops I am... temporarily damp."]},
+ {id:'adams',name:'John Adams',img:'adams.png',coat:'#5b3a29',trim:'#cfa86a',unlock:{type:'start'},
+  special:{name:'Boston Harbor Brief',type:'seq',seq:'BOSTONHARBOR',time:6.5,desc:'Type the word in order'},
+  drink:["Facts are stubborn things, and so is my thirst!","Boston-born, Boston-brewed!","Second president, first in sipping!","Abigail would be proud of this chug.","Remember the ladies — and remember the tea!","A lawyer argues; I drink.","My case rests... on this teacup.","Diplomacy is thirsty work.","Massachusetts makes the best gulps.","Order in the teacup!"],
+  fail:["Objection! That cup was rigged!","Not again... always second place!","Abigail, fetch a towel!","I'll write a strongly worded letter about this.","That spill was nobody's fault but Jefferson's.","Facts are stubborn — and so is this stain.","I lost my temper and my tea.","This cup needs a lawyer.","Oh, Massachusetts mud!","I demand a do-over of that sip!"]},
+ {id:'biden',name:'Joe Biden',img:'biden.png',coat:'#1f2f4d',trim:'#9fb3d1',unlock:{type:'buy',price:100},
+  special:{name:'Amtrak Express',type:'alt',keys:['J','K'],target:30,time:5,desc:'Full steam! Alternate J and K'},
+  drink:["Here's the deal: that's good tea!","Faster than an Amtrak!","Folks, that's one big gulp.","Aviators on, cup up!","Not ice cream, but I'll allow it.","Come on, man — refill time!","Scranton strong, tea long!","Literally the best sip ever.","Let's go, champ!","I've been drinking tea since before you were born, pal."],
+  fail:["Hold on, hold on — let me finish that sip.","Folks, that was not the deal.","Missed the train on that one.","Come on, man!","That cup took a detour.","Oops — malarkey!","My aviators are all foggy.","Don't tell the ice cream truck.","Let's try that again, folks.","Spilled like a rookie."]},
+ {id:'gwbush',name:'George W. Bush',img:'gwbush.png',coat:'#2b2b33',trim:'#a33a3a',unlock:{type:'buy',price:100},
+  special:{name:'Brush-Clearing Gulp',type:'mash',key:'B',target:32,time:5,desc:'Mash B to clear the brush'},
+  drink:["Tea time, Texas style!","Y'all better catch up!","That's some ranch-strength tea.","Fool me once... I drink again!","Strategery: drink faster.","Howdy, teacup!","Big Texas gulp!","Smooth as a fresh-painted portrait.","I'm the decider — and I decide to drink!","Crawford-approved!"],
+  fail:["I've been misunderestimated by this cup.","Fool me twice... shame on the tea.","That spill is not part of the strategery.","Dadgummit!","That cup went rogue.","Need to clear some brush — and this mess.","Well, that's a painting nobody wants.","Laura's gonna hear about this.","Hold on, pardner — redo!","That's a big Texas puddle."]},
+ {id:'eleanor',name:'Eleanor Roosevelt',img:'eleanor.png',coat:'#6b4a6e',trim:'#e6d3a3',unlock:{type:'buy',price:100},
+  special:{name:'Human Rights Rally',type:'seq',seq:'HUMANRIGHTS',time:6.5,desc:'Type the word in order'},
+  drink:["Do one thing every day that scares you — like chugging!","A woman is like a tea bag — strong in hot water!","Great minds discuss ideas. Great drinkers finish cups.","For human rights and hot drinks!","No one can make me feel inferior — or thirsty.","Grace under pressure, tea under control.","Tea for the whole nation!","My column today: this cup.","The future belongs to the well-hydrated.","Diplomacy, one sip at a time."],
+  fail:["Well. That was not my day.","Even a strong tea bag tears sometimes.","I'll write about this in my column... briefly.","A setback, not a defeat.","Franklin, did you jostle me?","Oh dear, my good gloves.","Hot water, indeed.","Next cup, more courage.","I fell, I learned, I'll sip again.","That cup has no sense of decorum."]},
+ {id:'nixon',name:'Richard Nixon',img:'nixon.png',coat:'#3a3f47',trim:'#8c96a3',unlock:{type:'buy',price:100},
+  special:{name:'Ping-Pong Diplomacy',type:'alt',keys:['A','L'],target:26,time:5,desc:'Ping! Pong! Alternate A and L'},
+  drink:["Let me make this perfectly clear: delicious!","Ping-pong and pekoe!","Victory sign! Double sip!","Opening new markets — for tea!","This tea goes on the record.","Great Wall-sized gulp!","California-cool and steeped!","I'll take that cup to the summit.","The silent majority says: drink!","Perfectly clear — and perfectly brewed."],
+  fail:["Let me make this perfectly clear... I spilled.","That sip did not go as planned. Next question.","No comment on that spill.","You won't have this cup to kick around anymore.","My hands were sweaty, all right?","Nobody saw that.","Check the replay — I mean, don't.","That cup lost the debate.","Back to California, I guess.","Victory sign... later."]},
+ {id:'kennedy',name:'John F. Kennedy',img:'kennedy.png',coat:'#24324a',trim:'#c7d0dd',unlock:{type:'buy',price:120},
+  special:{name:'Moonshot Sip',type:'seq',seq:'MOONSHOTTEA',time:6.5,desc:'Type the word in order'},
+  drink:["Ask not what your tea can do for you!","We choose to drink this cup!","One small sip... wait, that's not mine.","Ich bin ein Teetrinker!","Vigah! Pure vigah!","Hyannis Port harbor-blend!","Smooth as a sailboat on the Cape.","A rising tide lifts all teacups.","To the moon — and to the bottom of the cup!","New Frontier, new refill."],
+  fail:["Ask not... where my tea went.","We choose to try again — because it is hard!","That's a whole harbor of spill.","Not my finest hour.","Lost at sea... like my sip.","Wicked messy!","Tea on the tie! Not again!","Victory has a hundred fathers, this spill has none.","Mission to the cup: aborted.","Back to the drawing board, team."]},
+ {id:'fdr',name:'Franklin D. Roosevelt',img:'fdr.png',coat:'#4a4a4a',trim:'#b8b8b8',unlock:{type:'buy',price:120},
+  special:{name:'Fireside Chat',type:'seq',seq:'FIRESIDECHAT',time:6.5,desc:'Type the word in order'},
+  drink:["The only thing to fear is an empty cup!","A New Deal on tea!","Fireside sipping, my friends.","Four freedoms — four sips!","My friends, that was splendid.","Hyde Park-approved!","Steady as a fireside chat.","Bold, persistent sipping!","This tea passes in the first hundred days.","Eleanor, did you see that?"],
+  fail:["The only thing to fear... is that spill.","My friends, a minor setback.","If it fails, admit it frankly — and try another!","That cup needs a recovery plan.","Not according to plan.","Eleanor, don't look!","My pince-nez are all steamed up!","A temporary dip in my tea level.","We'll fix that in the next hundred days.","Splendid... no, not splendid."]},
+ {id:'trump',name:'Donald Trump',img:'trump.png',coat:'#1d2433',trim:'#b3262e',unlock:{type:'buy',price:120},
+  special:{name:'Tremendous Tower Chug',type:'mash',key:'T',target:32,time:5,desc:'Mash T to build the tower'},
+  drink:["Tremendous tea. The best tea!","Nobody drinks tea better than me, believe me.","Huge gulp. Huge!","Everybody's saying it — great sip.","That's a golden cup, folks.","Ten out of ten. Perfect sip.","Many people are calling it the greatest chug.","We're gonna drink so much, you'll get tired of drinking.","Beautiful tea. Beautiful.","Winning! Very much winning."],
+  fail:["Not my fault — bad cup, very bad.","Sad!","That was a terrible cup. Terrible.","Who designed this teapot? Not good.","Wrong! That sip was wrong.","That spill? Didn't happen.","I'll have a much better cup, believe me.","Total disaster of a sip.","Somebody bumped me. Unfair!","We'll come back bigger than ever."]},
+ {id:'patrick',name:'Patrick Star',img:'patrick.png',full:true,coat:'#e98aa3',trim:'#7bc96f',unlock:{type:'code',code:'SBOB'},
+  special:{name:'Under-the-Rock Slurp',type:'mash',key:' ',target:30,time:5,desc:'Mash SPACE as fast as you can'},
+  drink:["Is this... tea? I love tea!","Mmm, tastes like a sunny day at the bottom of the sea.","I'm drinking with my whole body!","Gulp! I did a good one!","Wow, I'm so smart today.","Tea is just wet happiness.","Look, I'm a teapot! Wait, no.","More, please! Lots more!","My tummy says thank you.","I'm the best tea drinker under any rock!"],
+  fail:["Wait, where did the tea go?","I forgot how mouths work.","Uh oh. I think I drank the air.","My cup is upside down. Is that bad?","I'm gonna go lie under my rock now.","Oops! The tea went swimming.","Is it supposed to be on my face?","I'm thinking... no, I'm not.","Can I have a do-over? I like do-overs.","That cup was too fast for me."]},
+ {id:'ted',name:'Ted',img:'ted.png',full:true,coat:'#a8743f',trim:'#6b4423',unlock:{type:'code',code:'BEAR'},
+  special:{name:'Big Bear Hug Chug',type:'alt',keys:['F','J'],target:28,time:5,desc:'Squeeze! Alternate F and J'},
+  drink:["Wicked good tea!","Pahk the cup in Hahvahd Yahd!","Stuffed with tea and loving it!","Bear hugs for this teacup!","Boston born, plush grown!","That's a wicked smaht sip!","I'm soakin' it in!","Like honey, but tea-er.","Go Sox! Go tea!","Fluffy and refreshed!"],
+  fail:["Aw, my fluff is soggy!","Wicked bad spill, guy.","Now I gotta go in the dryer.","Ugh, tea in my stuffing!","That's a Boston-sized mess.","Who moved my cup? Kidding, I missed.","Wicked embarrassin'.","Oh, fuzzballs!","Nobody saw that, right?","My paws ain't made for cups!"]},
+ {id:'unclesam',name:'Uncle Sam',img:'unclesam.png',coat:'#26417a',trim:'#b22234',unlock:{type:'wins',wins:10},
+  special:{name:'Star-Spangled Chug',type:'seq',seq:'STARSANDSTRIPES',time:7.5,desc:'Type the word in order'},
+  drink:["I WANT YOU... to watch me drink!","Red, white, and brew!","Star-spangled sip!","Liberty tastes delicious.","From sea to shining teacup!","E pluribus yum!","Stars, stripes, and steeped leaves!","That's how America chugs!","Hat tip to the tea!","Freedom in every drop!"],
+  fail:["I want YOU... to hand me a napkin.","Red, white, and... soaked.","My hat's full of tea!","Uncle Sam needs a refill — and a towel!","Not very patriotic of that cup.","Star-spangled spill!","Liberty... is slippery.","That's a national embarrassment.","Let's call that a practice round.","Even my beard is wet!"]},
+];
+
+const STAGES = [
+ {id:'boston_1700s',name:'1700s Boston',img:'boston_1700s.jpeg',music:'boston_1700s.mp3',unlock:{type:'start'},
+  fact:'On December 16, 1773, the Sons of Liberty dumped 342 chests of tea into Boston Harbor — right around here!'},
+ {id:'modern_boston',name:'Modern Boston',img:'modern_boston.webp',music:'modern_boston.mp3',unlock:{type:'start'},
+  fact:'Today you can visit the Boston Tea Party Ships & Museum on the Congress Street Bridge, close to where the tea was dumped.'},
+ {id:'white_house',name:'White House',img:'white_house.jpeg',music:'white_house.mp3',unlock:{type:'start'},
+  fact:'John Adams was the first president to live in the White House. He moved in in 1800, before it was even finished!'},
+ {id:'new_york',name:'New York',img:'new_york.jpeg',music:'new_york.mp3',unlock:{type:'start'},
+  fact:'New York City was the first capital under the U.S. Constitution. George Washington took his oath as president there in 1789.'},
+ {id:'lexington',name:'Lexington',img:'lexington.jpeg',music:'lexington.mp3',unlock:{type:'buy',price:100},
+  fact:'The first battles of the Revolutionary War were fought at Lexington and Concord on April 19, 1775.'},
+ {id:'britain',name:'Britain',img:'britain.jpg',music:'britain.mp3',unlock:{type:'buy',price:100},
+  fact:'King George III ruled Britain during the Revolution. In 1785, John Adams met him as the first U.S. ambassador to Britain — awkward!'},
+ {id:'bikini_bottom',name:'Bikini Bottom',img:'bikini_bottom.jpeg',music:'bikini_bottom.mp3',unlock:{type:'code',code:'SBOB'},
+  fact:'Tea and sea water: some accounts say so much tea piled up in Boston Harbor in 1773 that people had to push it under the water with oars!'},
+];
+
+const SFX_FILES = {
+  gulp:['gulp.mp3','audio/gulp.mp3'],
+  fail:['drinkfail.mp3','faildrink.mp3','audio/faildrink.mp3','audio/drinkfail.mp3'],
+  win:['win.wav','win.mp3','audio/win.mp3'],
+  lose:['lose.wav','lose.mp3','audio/lose.mp3'],
+  click:['click.wav','click.mp3','audio/click.mp3'],
+  rhythm:['rhythmclick.wav','clickrhythm.mp3','audio/clickrhythm.mp3','audio/clickrhythm']
+};
+
+/* ============================ SAVE ============================ */
+const SAVE_KEY = 'bostonTeaChallenge_v1';
+let save = {money:0,wins:0,chars:[],stages:[],muted:false,musicVol:.6,sfxVol:.8};
+try{ const s = JSON.parse(localStorage.getItem(SAVE_KEY)); if(s) save = Object.assign(save,s); }catch(e){}
+function persist(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(save)); }catch(e){} }
+
+function charUnlocked(c){
+  const u=c.unlock; if(u.type==='start') return true;
+  if(u.type==='wins') return save.wins>=u.wins || save.chars.includes(c.id);
+  return save.chars.includes(c.id);
+}
+function stageUnlocked(s){ return s.unlock.type==='start' || save.stages.includes(s.id); }
+
+/* ============================ HELPERS ============================ */
+const $ = s => document.querySelector(s);
+const rnd = a => a[Math.floor(Math.random()*a.length)];
+const r1 = v => Math.round(v*10)/10;
+const fmtTea = v => (Math.round(v*10)/10).toFixed(1).replace(/\.0$/,'');
+const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
+const initials = n => n.split(/\s+/).filter(w=>/^[A-Z]/.test(w)).map(w=>w[0]).join('').slice(0,3);
+
+let toastTimer;
+function toast(msg,ms=2600){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),ms); }
+
+function faceImg(c, cls=''){
+  const img = document.createElement('img');
+  img.src = asset(c.img); img.alt = c.name; img.draggable=false; if(cls) img.className=cls;
+  img.onerror = () => { const d=document.createElement('div'); d.className='faceFB'; d.style.background = c.full ? c.coat : '#f1c8a5';
+    d.innerHTML = '<span>'+initials(c.name)+'</span>'; img.replaceWith(d); };
+  return img;
+}
+
+/* ============================ AUDIO ============================ */
+const audioCache = {};       // key -> resolved src or null
+const overrides = {};        // stageId -> objectURL (custom uploads, this session only)
+let actx = null;
+function probe(src){
+  return new Promise(res=>{
+    const a = new Audio(); let done=false;
+    const fin = v => { if(!done){ done=true; res(v); } };
+    a.addEventListener('loadedmetadata',()=>fin(true),{once:true});
+    a.addEventListener('canplaythrough',()=>fin(true),{once:true});
+    a.addEventListener('error',()=>fin(false),{once:true});
+    setTimeout(()=>fin(false),7000);
+    a.preload='auto'; a.src=src; try{a.load();}catch(e){fin(false);}
+  });
+}
+const pending = {};
+function resolveAudio(key,list){
+  if(key in audioCache) return Promise.resolve(audioCache[key]);
+  if(pending[key]) return pending[key];
+  pending[key] = (async()=>{
+    for(const n of list){ if(await probe(asset(n))){ audioCache[key]=asset(n); return audioCache[key]; } }
+    audioCache[key]=null; return null;
+  })();
+  return pending[key];
+}
+function preloadSfx(){ for(const k in SFX_FILES) resolveAudio('sfx_'+k, SFX_FILES[k]); }
+
+function synth(name){
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    const now = actx.currentTime, v = save.sfxVol*0.25;
+    const tone = (f1,f2,d,type='sine',t0=0,vol=v)=>{
+      const o=actx.createOscillator(), g=actx.createGain(); o.type=type;
+      o.frequency.setValueAtTime(f1,now+t0); o.frequency.exponentialRampToValueAtTime(Math.max(30,f2),now+t0+d);
+      g.gain.setValueAtTime(vol,now+t0); g.gain.exponentialRampToValueAtTime(0.001,now+t0+d);
+      o.connect(g); g.connect(actx.destination); o.start(now+t0); o.stop(now+t0+d+.02);
+    };
+    if(name==='gulp'){ tone(320,110,.18,'sine'); tone(260,90,.16,'sine',.17); }
+    else if(name==='fail'){ tone(400,90,.5,'sawtooth',0,v*.6); }
+    else if(name==='win'){ [523,659,784,1046].forEach((f,i)=>tone(f,f,.25,'triangle',i*.12)); }
+    else if(name==='lose'){ [392,330,262,196].forEach((f,i)=>tone(f,f*.97,.3,'triangle',i*.18)); }
+    else if(name==='click'){ tone(900,600,.05,'square',0,v*.4); }
+    else if(name==='rhythm'){ tone(1400,900,.06,'triangle',0,v*.8); }
+  }catch(e){}
+}
+function sfx(name){
+  if(save.muted) return;
+  const src = audioCache['sfx_'+name];
+  if(src){ const a=new Audio(src); a.volume=save.sfxVol; a.play().catch(()=>synth(name)); }
+  else synth(name);
+}
+
+const music = new Audio(); music.loop = true;
+let musicToken = 0;
+const missingWarned = {};
+async function playMusic(stageId, vol=1){
+  const tok = ++musicToken;
+  const st = STAGES.find(s=>s.id===stageId);
+  const src = overrides[stageId] || await resolveAudio('mus_'+stageId,[st.music,'audio/'+st.music]);
+  if(tok!==musicToken) return;
+  if(!src){
+    music.pause();
+    if(!missingWarned[stageId]){ missingWarned[stageId]=1; toast('🎵 No music file found for "'+st.name+'" — playing without music.'); }
+    return;
+  }
+  if(music.src!==src){ music.src=src; }
+  music.volume = clamp(save.musicVol*vol,0,1); music.muted = save.muted;
+  music.play().catch(()=>{});
+}
+function stopMusic(){ musicToken++; music.pause(); }
+function applyMute(){ music.muted = save.muted; $('#muteBtn').textContent = save.muted?'🔇':'🔊'; }
+$('#muteBtn').onclick = ()=>{ save.muted=!save.muted; persist(); applyMute(); if(!save.muted) sfx('click'); };
+applyMute();
+
+/* ============================ SCREENS ============================ */
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id)); }
+function updateWallet(){ const t='💰 $'+save.money+'  ·  🏆 '+save.wins+' wins'; $('#wallet1').textContent=t; $('#wallet2').textContent=t; }
+
+/* ---------- Intro ---------- */
+$('#logoImg').onerror = ()=>{ $('#logoImg').style.display='none'; $('#logoFallback').style.display='block'; };
+$('#playBtn').onclick = ()=>{ sfx('click'); preloadSfx(); playMusic('boston_1700s',.6); buildSelect(); show('select'); };
+function enterCode(){
+  const code = $('#codeInput').value.trim().toUpperCase(); $('#codeInput').value='';
+  if(!code) return;
+  preloadSfx();
+  if(code==='SBOB'){
+    const had = save.chars.includes('patrick');
+    if(!had) save.chars.push('patrick'); if(!save.stages.includes('bikini_bottom')) save.stages.push('bikini_bottom'); persist();
+    sfx('win'); toast(had?'Already unlocked: Patrick Star & Bikini Bottom!':'⭐ Secret unlocked: Patrick Star + the Bikini Bottom stage!');
+  } else if(code==='BEAR'){
+    const had = save.chars.includes('ted'); if(!had) save.chars.push('ted'); persist();
+    sfx('win'); toast(had?'Ted is already unlocked!':'🧸 Secret unlocked: Ted!');
+  } else { sfx('fail'); toast("Hmm... the Founding Fathers don't recognize that code."); }
+}
+$('#codeBtn').onclick = enterCode;
+$('#codeInput').addEventListener('keydown',e=>{ e.stopPropagation(); if(e.key==='Enter') enterCode(); });
+
+/* ---------- Audio settings modal ---------- */
+$('#audioBtn').onclick = openAudio;
+function openAudio(){
+  sfx('click'); preloadSfx();
+  const box = $('#modalBox');
+  let h = '<h2>🎵 Audio Settings</h2>'+
+   '<p style="text-align:center;margin:0 0 8px"><label><input type="checkbox" id="amute" '+(save.muted?'checked':'')+'> Mute everything</label> &nbsp; '+
+   'Music <input type="range" id="amv" min="0" max="1" step=".05" value="'+save.musicVol+'"> &nbsp; '+
+   'Effects <input type="range" id="asv" min="0" max="1" step=".05" value="'+save.sfxVol+'"></p>'+
+   '<h3>Stage music</h3><p style="font-size:14px;margin:2px 0 6px">The game looks for the .mp3 files next to this page (or in an <i>audio/</i> folder). You can also upload your own mp3 for any stage — it is used until you close the page.</p>';
+  STAGES.forEach(s=>{
+    h+='<div class="arow"><b>'+s.name+'</b><span class="st" id="ast_'+s.id+'">checking…</span>'+
+       '<span><button class="btn small" data-test="'+s.id+'">▶ Test</button> <button class="btn small ghost" data-stop="1">■</button></span>'+
+       '<input class="upl" type="file" accept="audio/mpeg,audio/*" data-up="'+s.id+'"></div>';
+  });
+  h+='<h3>Sound effects</h3><div style="display:flex;gap:6px;flex-wrap:wrap">';
+  Object.keys(SFX_FILES).forEach(k=>{ h+='<button class="btn small ghost" data-sfx="'+k+'">'+k+' <span id="asf_'+k+'"></span></button>'; });
+  h+='</div><p style="font-size:13px">Missing sound effects are replaced with simple built-in beeps, so the game always works.</p>'+
+     '<p style="text-align:center"><button class="btn" id="aclose">Close</button></p>';
+  box.innerHTML = h; $('#modal').classList.add('show');
+  STAGES.forEach(s=>{
+    if(overrides[s.id]){ $('#ast_'+s.id).innerHTML='<span class="cu">custom upload</span>'; return; }
+    resolveAudio('mus_'+s.id,[s.music,'audio/'+s.music]).then(src=>{ const el=$('#ast_'+s.id); if(el) el.innerHTML = src?'<span class="ok">✔ '+s.music+'</span>':'<span class="no">✖ missing '+s.music+'</span>'; });
+  });
+  Object.keys(SFX_FILES).forEach(k=>resolveAudio('sfx_'+k,SFX_FILES[k]).then(src=>{ const el=$('#asf_'+k); if(el) el.textContent = src?'✔':'(beep)'; }));
+  $('#amute').onchange = e=>{ save.muted=e.target.checked; persist(); applyMute(); };
+  $('#amv').oninput = e=>{ save.musicVol=+e.target.value; music.volume=save.musicVol; persist(); };
+  $('#asv').oninput = e=>{ save.sfxVol=+e.target.value; persist(); };
+  box.querySelectorAll('[data-test]').forEach(b=>b.onclick=()=>playMusic(b.dataset.test));
+  box.querySelectorAll('[data-stop]').forEach(b=>b.onclick=stopMusic);
+  box.querySelectorAll('[data-sfx]').forEach(b=>b.onclick=()=>sfx(b.dataset.sfx));
+  box.querySelectorAll('[data-up]').forEach(inp=>inp.onchange=()=>{
+    const f = inp.files[0]; if(!f) return; const id=inp.dataset.up;
+    if(overrides[id]) URL.revokeObjectURL(overrides[id]);
+    overrides[id] = URL.createObjectURL(f);
+    $('#ast_'+id).innerHTML='<span class="cu">custom: '+f.name.slice(0,22)+'</span>'; playMusic(id);
+  });
+  $('#aclose').onclick = ()=>{ $('#modal').classList.remove('show'); sfx('click');
+    if($('#select').classList.contains('active')) playMusic('boston_1700s',.6);
+    else if($('#intro').classList.contains('active')) stopMusic(); };
+}
+
+/* ---------- Purchase / confirm modal ---------- */
+function confirmBox(html, yesText, onYes){
+  $('#modalBox').innerHTML = '<div style="text-align:center;font-size:20px">'+html+'</div><p style="text-align:center;margin-top:14px">'+
+    (yesText?'<button class="btn" id="cYes">'+yesText+'</button> ':'')+'<button class="btn ghost" id="cNo">'+(yesText?'Cancel':'OK')+'</button></p>';
+  $('#modal').classList.add('show');
+  if(yesText) $('#cYes').onclick = ()=>{ $('#modal').classList.remove('show'); onYes(); };
+  $('#cNo').onclick = ()=>{ $('#modal').classList.remove('show'); sfx('click'); };
+}
+function tryBuy(kind,item){
+  const price=item.unlock.price;
+  if(save.money<price){ sfx('fail'); confirmBox('<b>'+item.name+'</b> costs $'+price+'.<br>You have $'+save.money+'. Win more matches to earn dollars!'); return; }
+  confirmBox('Buy <b>'+item.name+'</b> for <b>$'+price+'</b>?<br><small>You have $'+save.money+'.</small>','Buy!',()=>{
+    save.money-=price; (kind==='char'?save.chars:save.stages).push(item.id); persist(); sfx('win'); toast('🎉 '+item.name+' unlocked!'); buildSelect();
+  });
+}
+
+/* ---------- Select ---------- */
+const sel = {p:'jefferson', c:'washington', s:'boston_1700s', t:60};
+function lockText(u){
+  if(u.type==='buy') return '🔒 $'+u.price;
+  if(u.type==='code') return '🔒 secret code';
+  if(u.type==='wins') return '🔒 '+Math.min(save.wins,u.wins)+'/'+u.wins+' wins';
+  return '';
+}
+function buildSelect(){
+  updateWallet();
+  ['p','c'].forEach(side=>{
+    const g = $('#'+side+'Grid'); g.innerHTML='';
+    CHARS.forEach(c=>{
+      const un = charUnlocked(c);
+      const d = document.createElement('div'); d.className='card'+(un?'':' locked')+(sel[side]===c.id?' sel':'');
+      const th = document.createElement('div'); th.className='thumb'; th.appendChild(faceImg(c)); d.appendChild(th);
+      d.appendChild(document.createTextNode(c.name));
+      if(!un){ const l=document.createElement('span'); l.className='lock'; l.textContent=lockText(c.unlock); d.appendChild(l); }
+      d.onclick = ()=>{
+        if(un){ sel[side]=c.id; sfx('click'); buildSelect(); }
+        else if(c.unlock.type==='buy') tryBuy('char',c);
+        else if(c.unlock.type==='code'){ sfx('fail'); toast('🤫 Find the secret code on the title screen!'); }
+        else { sfx('fail'); toast('🎩 Win '+c.unlock.wins+' matches to unlock '+c.name+'!'); }
+      };
+      g.appendChild(d);
+    });
+  });
+  const sg = $('#sGrid'); sg.innerHTML='';
+  STAGES.forEach(s=>{
+    const un = stageUnlocked(s);
+    const d = document.createElement('div'); d.className='stageCard'+(un?'':' locked')+(sel.s===s.id?' sel':'');
+    d.style.backgroundImage = 'url("'+asset(s.img)+'")';
+    d.innerHTML = (un?'':'<div class="lock">'+lockText(s.unlock)+'</div>')+'<span>'+s.name+'</span>';
+    d.onclick = ()=>{
+      if(un){ sel.s=s.id; sfx('click'); buildSelect(); }
+      else if(s.unlock.type==='buy') tryBuy('stage',s);
+      else { sfx('fail'); toast('🤫 A secret code unlocks this stage...'); }
+    };
+    sg.appendChild(d);
+  });
+  document.querySelectorAll('#timerPick button').forEach(b=>b.classList.toggle('sel',+b.dataset.t===sel.t));
+  const P=CHARS.find(c=>c.id===sel.p), C=CHARS.find(c=>c.id===sel.c), S=STAGES.find(s=>s.id===sel.s);
+  $('#vsLine').innerHTML = '<b>'+P.name+'</b> vs <b>'+C.name+'</b><br><small>'+S.name+' · '+sel.t+' seconds</small>';
+}
+document.querySelectorAll('#timerPick button').forEach(b=>b.onclick=()=>{ sel.t=+b.dataset.t; sfx('click'); buildSelect(); });
+$('#backIntro').onclick = ()=>{ sfx('click'); stopMusic(); show('intro'); };
+$('#startBtn').onclick = ()=>{ sfx('click'); startMatch(); };
+$('#resetLink').onclick = e=>{ e.preventDefault();
+  confirmBox('Reset ALL progress?<br><small>Dollars, wins and unlocks will be erased.</small>','Reset',()=>{
+    save.money=0; save.wins=0; save.chars=[]; save.stages=[]; persist();
+    sel.p='jefferson'; sel.c='washington'; sel.s='boston_1700s'; buildSelect(); toast('Progress reset.'); });
+};
+
+/* ============================ FIGHTERS ============================ */
+function cupSVG(){
+  return '<svg viewBox="0 0 46 36" class="cupsvg" width="100%" height="100%">'+
+   '<path d="M6 6 h28 v6 q0 18 -14 20 q-14 -2 -14 -20z" fill="#fbf7ee" stroke="#3b2a1f" stroke-width="2.5"/>'+
+   '<path d="M34 10 q10 0 8 8 q-2 6 -9 5" fill="none" stroke="#3b2a1f" stroke-width="2.5"/>'+
+   '<ellipse cx="20" cy="7" rx="13" ry="3" fill="#8a4f1c" stroke="#3b2a1f" stroke-width="1.5"/>'+
+   '<path d="M10 18 q10 4 20 0" stroke="#c9962b" stroke-width="2" fill="none"/>'+
+   '<ellipse cx="20" cy="33" rx="16" ry="3" fill="#fbf7ee" stroke="#3b2a1f" stroke-width="2"/></svg>';
+}
+function bodySVG(c){
+  return '<svg class="bodysvg" viewBox="0 0 220 205">'+
+   '<rect x="80" y="150" width="24" height="42" fill="#efe6d2" stroke="#3b2a1f" stroke-width="3"/>'+
+   '<rect x="116" y="150" width="24" height="42" fill="#efe6d2" stroke="#3b2a1f" stroke-width="3"/>'+
+   '<ellipse cx="88" cy="196" rx="20" ry="8" fill="#2a1d14"/><ellipse cx="132" cy="196" rx="20" ry="8" fill="#2a1d14"/>'+
+   '<path d="M62 42 Q110 20 158 42 L172 162 Q110 172 48 162 Z" fill="'+c.coat+'" stroke="#3b2a1f" stroke-width="3"/>'+
+   '<path d="M110 40 L110 165" stroke="'+c.trim+'" stroke-width="3"/>'+
+   '<path d="M92 30 L128 30 L110 72 Z" fill="#fbf7ee" stroke="#3b2a1f" stroke-width="2.5"/>'+
+   '<path d="M101 34 q9 14 18 0" fill="#fbf7ee" stroke="#3b2a1f" stroke-width="2"/>'+
+   [82,102,122].map(y=>'<circle cx="100" cy="'+y+'" r="3.5" fill="'+c.trim+'" stroke="#3b2a1f"/><circle cx="120" cy="'+y+'" r="3.5" fill="'+c.trim+'" stroke="#3b2a1f"/>').join('')+
+   '<path d="M64 48 Q42 90 46 128" stroke="#3b2a1f" stroke-width="24" fill="none" stroke-linecap="round"/>'+
+   '<path d="M64 48 Q42 90 46 128" stroke="'+c.coat+'" stroke-width="18" fill="none" stroke-linecap="round"/>'+
+   '<circle cx="47" cy="136" r="10" fill="#f1c8a5" stroke="#3b2a1f" stroke-width="2.5"/></svg>';
+}
+function buildFighter(side,c){
+  const wrap = document.createElement('div'); wrap.className='fwrap '+side; wrap.id='f_'+side;
+  const f = document.createElement('div'); f.className='fighter'+(c.full?' full':'');
+  f.innerHTML = bodySVG(c)+
+    '<div class="arm"><div class="sleeve" style="background:'+c.coat+'"></div><div class="cuff"></div><div class="hand"></div><div class="cup">'+cupSVG()+'</div></div>'+
+    '<div class="cupfloat">'+cupSVG()+'</div>';
+  const head = document.createElement('div'); head.className='head'; head.appendChild(faceImg(c)); f.appendChild(head);
+  const b = document.createElement('div'); b.className='bubble';
+  wrap.appendChild(f); wrap.appendChild(b);
+  return wrap;
+}
+function fighterEl(side){ return $('#f_'+side+' .fighter'); }
+function setAnim(side,cls,beat){
+  const f=fighterEl(side); if(!f) return;
+  f.classList.remove('drink','special','fail','cheer','sad');
+  void f.offsetWidth;
+  if(cls) f.classList.add(...cls.split(' '));
+  if(beat) f.style.setProperty('--beat',beat+'ms');
+}
+const bubbleTimers={};
+function say(side,text,ms=2300){
+  const b=$('#f_'+side+' .bubble'); if(!b) return;
+  b.textContent='"'+text+'"'; b.classList.add('show');
+  clearTimeout(bubbleTimers[side]); bubbleTimers[side]=setTimeout(()=>b.classList.remove('show'),ms);
+}
+function floatText(side,text,bad){
+  const w=$('#f_'+side); const d=document.createElement('div'); d.className='float'+(bad?' bad':''); d.textContent=text; w.appendChild(d); setTimeout(()=>d.remove(),1400);
+}
+function splash(side){
+  const w=$('#f_'+side);
+  for(let i=0;i<10;i++){
+    const d=document.createElement('div'); d.className='drop';
+    d.style.left=(side==='p'?120:100)+'px'; d.style.top='110px';
+    d.style.setProperty('--dx',(Math.random()*160-80)+'px'); d.style.setProperty('--dy',(Math.random()*120+20)+'px');
+    w.appendChild(d); setTimeout(()=>d.remove(),900);
+  }
+}
+
+/* ============================ MATCH ============================ */
+let M = null;      // match state
+let mini = null;   // active minigame
+function startMatch(){
+  const P=CHARS.find(c=>c.id===sel.p), C=CHARS.find(c=>c.id===sel.c), S=STAGES.find(s=>s.id===sel.s);
+  M = {P,C,S,timeLeft:sel.t,dur:sel.t,pTea:0,cTea:0,phase:'intro',timeUp:false,pCd:0,cCd:0,
+       skill:0.55+Math.random()*0.25, turn:0};
+  // arena
+  const arena=$('#arena');
+  arena.querySelectorAll('.fwrap').forEach(e=>e.remove());
+  arena.style.backgroundImage='url("'+asset(S.img)+'")';
+  const fb=$('#arenaFallback'); fb.textContent=S.name; fb.style.display='none';
+  const test=new Image(); test.onerror=()=>{ fb.style.display='flex'; arena.style.backgroundImage='linear-gradient(#c9a57a,#8b5a2b)'; }; test.src=asset(S.img);
+  arena.appendChild(buildFighter('p',P)); arena.appendChild(buildFighter('c',C));
+  $('#pName').textContent=P.name+' (You)'; $('#cName').textContent=C.name+' (CPU)';
+  $('#stageName').textContent=S.name; updateTea(); updateClock();
+  $('#specialName').textContent=P.special.name;
+  $('#mini').style.display='none'; $('#moves').style.display='none'; $('#hint').textContent='';
+  show('match');
+  playMusic(S.id);
+  banner('Ready...'); bigText('READY?');
+  setTimeout(()=>{ bigText('DRINK!'); M.phase='go'; M.last=performance.now(); nextTurn('p'); },1300);
+}
+function banner(t){ $('#banner').textContent=t; }
+function bigText(t){ const b=$('#bigText'); b.textContent=t; b.classList.remove('show'); void b.offsetWidth; b.classList.add('show'); clearTimeout(b._t); b._t=setTimeout(()=>b.classList.remove('show'),900); }
+function updateTea(popSide){
+  $('#pTea').textContent=fmtTea(M.pTea); $('#cTea').textContent=fmtTea(M.cTea);
+  if(popSide){ const el=$(popSide==='p'?'#pTea':'#cTea'); el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+}
+function updateClock(){
+  const t=Math.max(0,Math.ceil(M.timeLeft)); $('#clockT').textContent=Math.floor(t/60)+':'+String(t%60).padStart(2,'0');
+  $('#clock').classList.toggle('low',t<=10);
+}
+
+function nextTurn(who){
+  if(!M || M.phase==='over') return;
+  if(M.timeUp){ endMatch(); return; }
+  M.turn++;
+  if(who==='p'){
+    if(M.pCd>0) M.pCd--;
+    M.phase='choose';
+    setAnim('p',''); setAnim('c','');
+    banner('Your turn — pick a move!');
+    $('#mini').style.display='none'; $('#moves').style.display='flex';
+    const sb=$('#specialBtn');
+    sb.classList.toggle('disabled',M.pCd>0);
+    $('#specialDesc').textContent = M.pCd>0 ? 'Recharging... ready in '+M.pCd+' turn'+(M.pCd>1?'s':'') : M.P.special.desc+' · up to +8 tea';
+    $('#hint').textContent='Click a move or press 1, 2 or 3. The clock keeps ticking!';
+  } else {
+    if(M.cCd>0) M.cCd--;
+    M.phase='cpu';
+    $('#moves').style.display='none';
+    cpuTurn();
+  }
+}
+document.querySelectorAll('.move').forEach(m=>m.onclick=()=>playerMove(m.dataset.m));
+function playerMove(m){
+  if(!M || M.phase!=='choose') return;
+  if(m==='special' && M.pCd>0){ sfx('fail'); toast('Your special move is still recharging!'); return; }
+  sfx('click');
+  M.phase='mini'; $('#moves').style.display='none';
+  if(m==='special') M.pCd=3;
+  runMove('p',m,false);
+}
+function cpuTurn(){
+  let m; const r=Math.random();
+  if(M.cCd===0 && r<0.4) m='special'; else m = Math.random()<0.45?'drink':'chug';
+  if(m==='special') M.cCd=3;
+  const name = m==='special'?M.C.special.name:(m==='drink'?'Drink':'Chug');
+  banner('CPU '+M.C.name.split(' ').slice(-1)[0]+': '+name+'!');
+  $('#hint').textContent='The CPU is drinking... get ready for your turn!';
+  setTimeout(()=>{ if(M && M.phase==='cpu') runMove('c',m,true); },650);
+}
+function runMove(side,m,auto){
+  const ch = side==='p'?M.P:M.C;
+  const done = comp => resolveTurn(side,m,comp);
+  $('#mini').style.display='block'; $('#hint').textContent='';
+  if(m==='drink'||m==='chug'){
+    const iv = m==='drink'?650:420;
+    setAnim(side,'drink',iv);
+    if(!auto) banner(m==='drink'?'DRINK! Hit the 3 beats':'CHUG! Hit the 6 beats');
+    startRhythm(m,auto,done);
+  } else {
+    setAnim(side,'special');
+    if(!auto) banner('SPECIAL: '+ch.special.name+'!');
+    if(auto) startAutoSpecial(ch.special,done); else startSpecial(ch.special,done);
+  }
+}
+function resolveTurn(side,m,comp){
+  if(!M || M.phase==='over') return;
+  mini=null;
+  const ch = side==='p'?M.P:M.C;
+  const gain = r1(MAX[m]*clamp(comp,0,1));
+  const failThresh = m==='special'?0.45:0.4;
+  const ok = comp>=failThresh;
+  const add = ok?gain:0;
+  if(side==='p') M.pTea=r1(M.pTea+add); else M.cTea=r1(M.cTea+add);
+  updateTea(side);
+  if(ok){ setAnim(side,'cheer'); sfx('gulp'); floatText(side,'+'+fmtTea(add)+' TEA'); say(side,rnd(ch.drink)); }
+  else { setAnim(side,'fail'); sfx('fail'); splash(side); floatText(side,'SPILLED!',true); say(side,rnd(ch.fail)); }
+  $('#mini').style.display='none';
+  M.phase='resolve';
+  setTimeout(()=>nextTurn(side==='p'?'c':'p'),1500);
+}
+
+/* ---------- Rhythm minigame ---------- */
+const TRAVEL=1300, W_PERF=75, W_GOOD=150, W_OK=230;
+function startRhythm(m,auto,onDone){
+  const n = m==='drink'?3:6, iv = m==='drink'?650:420;
+  const box=$('#mini');
+  box.innerHTML='<div class="miniHead"><span class="miniTitle">'+(auto?'CPU is '+(m==='drink'?'drinking':'chugging')+'...':(m==='drink'?'Drink':'Chug')+': press the key when the circle reaches the ring')+'</span><span class="miniTime" id="rScore"></span></div>'+
+    '<div class="lane" id="lane"><div class="track"></div><div class="zone"></div></div>'+
+    (auto?'':'<div class="hint">Press the letter shown on each circle — or click the lane — right as it lands in the ring.</div>');
+  const lane=$('#lane');
+  const t0=performance.now()+TRAVEL+250;
+  const notes=[];
+  for(let i=0;i<n;i++){
+    const el=document.createElement('div'); el.className='note';
+    const key=rnd(KEYS); el.textContent=key; lane.appendChild(el);
+    notes.push({t:t0+i*iv,key,el,judged:false,q:0});
+  }
+  mini={type:'rhythm',notes,auto,onDone,lane,end:t0+(n-1)*iv+W_OK+150,skill:M.skill};
+  if(!auto) lane.addEventListener('pointerdown',e=>{ e.preventDefault(); rhythmInput(null,true); });
+}
+function judge(note,q,label){
+  note.judged=true; note.q=q; note.el.classList.add(q>0?'hit':'miss');
+  const j=document.createElement('div'); j.className='judge'; j.textContent=label;
+  j.style.color = q>=1?'#4f7a3a':q>0?'#8b5a2b':'#a8452f';
+  mini.lane.appendChild(j); setTimeout(()=>j.remove(),700);
+  if(q>0) sfx('rhythm');
+  const sum = mini.notes.reduce((a,n)=>a+n.q,0);
+  const sc=$('#rScore'); if(sc) sc.textContent=Math.round(sum/mini.notes.length*100)+'%';
+}
+function rhythmInput(key,isClick){
+  if(!mini||mini.type!=='rhythm'||mini.auto) return;
+  const now=performance.now();
+  const note = mini.notes.find(n=>!n.judged && Math.abs(now-n.t)<=W_OK);
+  if(!note) return;
+  if(!isClick && key!==note.key){ judge(note,0,'WRONG KEY'); return; }
+  const d=Math.abs(now-note.t);
+  if(d<=W_PERF) judge(note,1,'PERFECT!'); else if(d<=W_GOOD) judge(note,.7,'GOOD'); else judge(note,.4,'OK');
+}
+function updateRhythm(now){
+  const w=mini.lane.clientWidth, hitX=61, span=w-hitX-40;
+  mini.notes.forEach(n=>{
+    if(!n.judged || n.q===0){
+      const x = hitX + (n.t-now)/TRAVEL*span;
+      n.el.style.left = x+'px'; n.el.style.display = x>w+40?'none':'flex';
+    }
+    if(!n.judged){
+      if(mini.auto && now>=n.t){
+        const r=Math.random(), s=mini.skill;
+        if(r<s*0.55) judge(n,1,'PERFECT!'); else if(r<s) judge(n,.7,'GOOD'); else if(r<s+0.18) judge(n,.4,'OK'); else judge(n,0,'MISS');
+      } else if(!mini.auto && now>n.t+W_OK) judge(n,0,'MISS');
+    }
+  });
+  if(now>mini.end && mini.notes.every(n=>n.judged)){
+    const comp = mini.notes.reduce((a,n)=>a+n.q,0)/mini.notes.length;
+    const cb=mini.onDone; mini=null; cb(comp);
+  }
+}
+
+/* ---------- Special minigames ---------- */
+function keyLabel(k){ return k===' '?'SPACE':k; }
+function startSpecial(sp,onDone){
+  const box=$('#mini'); const now=performance.now();
+  mini={type:sp.type,sp,onDone,end:now+sp.time*1000+600,start:now+600,count:0,idx:0,lastKey:null};
+  let h='<div class="miniHead"><span class="miniTitle">⭐ '+sp.name+' — '+sp.desc+'</span><span class="miniTime" id="sTime">'+sp.time.toFixed(1)+'s</span></div>';
+  if(sp.type==='mash'){
+    h+='<div class="bar"><div id="sBar"></div></div><div class="mashRow"><button class="mashBtn next" id="mashA">'+keyLabel(sp.key)+'</button></div>';
+  } else if(sp.type==='alt'){
+    h+='<div class="bar"><div id="sBar"></div></div><div class="mashRow"><button class="mashBtn next" id="altA">'+sp.keys[0]+'</button><button class="mashBtn" id="altB">'+sp.keys[1]+'</button></div>';
+  } else {
+    h+='<div class="seqRow" id="seqRow">'+sp.seq.split('').map((l,i)=>'<div class="seqL'+(i===0?' cur':'')+'" id="sq'+i+'">'+l+'</div>').join('')+'</div>';
+    const uniq=[...new Set(sp.seq.split(''))].sort(()=>Math.random()-.5);
+    h+='<div class="seqKeys">'+uniq.map(l=>'<button data-l="'+l+'">'+l+'</button>').join('')+'</div>';
+  }
+  box.innerHTML=h;
+  const tap=(el,k)=>el.addEventListener('pointerdown',e=>{e.preventDefault(); specialInput(k);});
+  if(sp.type==='mash') tap($('#mashA'),sp.key);
+  if(sp.type==='alt'){ tap($('#altA'),sp.keys[0]); tap($('#altB'),sp.keys[1]); }
+  if(sp.type==='seq') box.querySelectorAll('[data-l]').forEach(b=>tap(b,b.dataset.l));
+  $('#hint').textContent='Get ready... GO!';
+}
+function specialInput(k){
+  if(!mini || !['mash','alt','seq'].includes(mini.type)) return;
+  const now=performance.now(); if(now<mini.start) return;
+  const sp=mini.sp;
+  if(sp.type==='mash'){
+    if(k!==sp.key) return;
+    mini.count++; flash('#mashA');
+  } else if(sp.type==='alt'){
+    const expect = mini.lastKey===sp.keys[0]?sp.keys[1]:sp.keys[0];
+    if(k!==expect) return;
+    mini.lastKey=k; mini.count++;
+    flash(k===sp.keys[0]?'#altA':'#altB');
+    $('#altA').classList.toggle('next',k!==sp.keys[0]); $('#altB').classList.toggle('next',k===sp.keys[0]);
+  } else {
+    if(mini.idx>=sp.seq.length) return;
+    if(k===sp.seq[mini.idx]){
+      $('#sq'+mini.idx).className='seqL done'; mini.idx++;
+      if(mini.idx<sp.seq.length) $('#sq'+mini.idx).className='seqL cur';
+      sfx('rhythm');
+    } else {
+      mini.end-=400; const r=$('#seqRow'); r.classList.remove('wrong'); void r.offsetWidth; r.classList.add('wrong');
+    }
+  }
+}
+function flash(sel){ const b=$(sel); if(!b) return; b.classList.add('flash'); setTimeout(()=>b.classList.remove('flash'),60); }
+function updateSpecial(now){
+  const sp=mini.sp;
+  const left=Math.max(0,(mini.end-now)/1000);
+  const tEl=$('#sTime'); if(tEl) tEl.textContent = now<mini.start?'Ready...':left.toFixed(1)+'s';
+  if(now>=mini.start) $('#hint').textContent = sp.type==='seq'?'Type the letters in order (or click them). Wrong letters cost time!':'GO GO GO!';
+  let comp;
+  if(sp.type==='seq'){ comp=mini.idx/sp.seq.length; }
+  else { comp=Math.min(1,mini.count/sp.target); const b=$('#sBar'); if(b) b.style.width=(comp*100)+'%'; }
+  if(now>=mini.end || comp>=1){ const cb=mini.onDone; mini=null; cb(comp); }
+}
+function startAutoSpecial(sp,onDone){
+  const now=performance.now();
+  const comp=clamp(M.skill+(Math.random()*0.45-0.3),0.1,1);
+  const dur=Math.min(sp.time,4.5)*1000;
+  $('#mini').innerHTML='<div class="miniHead"><span class="miniTitle">⭐ CPU special: '+sp.name+'!</span><span class="miniTime" id="sTime"></span></div><div class="bar"><div id="sBar"></div></div>';
+  mini={type:'auto',start:now,dur,comp,onDone};
+}
+function updateAuto(now){
+  const p=clamp((now-mini.start)/mini.dur,0,1);
+  const wobble = p<1 ? Math.abs(Math.sin(now/90))*0.05 : 0;
+  const b=$('#sBar'); if(b) b.style.width=(Math.min(1,mini.comp*p+wobble)*100)+'%';
+  if(p>=1){ const cb=mini.onDone, c=mini.comp; mini=null; cb(c); }
+}
+
+/* ---------- Main loop ---------- */
+function loop(now){
+  if(M && M.phase!=='over' && M.phase!=='intro' && M.last!=null){
+    const dt=(now-M.last)/1000; M.last=now;
+    if(!M.timeUp){
+      M.timeLeft-=dt;
+      if(M.timeLeft<=0){
+        M.timeLeft=0; M.timeUp=true; bigText('TIME!');
+        if(M.phase==='choose') setTimeout(endMatch,700);
+        else $('#hint').textContent='TIME! Finish this last drink...';
+      }
+      updateClock();
+    }
+  }
+  if(mini){
+    if(mini.type==='rhythm') updateRhythm(now);
+    else if(mini.type==='auto') updateAuto(now);
+    else updateSpecial(now);
+  }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+/* ---------- Keyboard ---------- */
+document.addEventListener('keydown',e=>{
+  if(e.target && e.target.tagName==='INPUT') return;
+  const k = e.key===' '?' ':(e.key||'').toUpperCase();
+  if(!$('#match').classList.contains('active')) return;
+  if(k===' ') e.preventDefault();
+  if(M && M.phase==='choose'){
+    if(k==='1') playerMove('drink'); else if(k==='2') playerMove('chug'); else if(k==='3') playerMove('special');
+    return;
+  }
+  if(!mini) return;
+  if(mini.type==='rhythm'){ if(e.repeat) return; if(k.length===1 && k!==' ') rhythmInput(k,false); else if(k===' ') rhythmInput(null,true); }
+  else if(['mash','alt','seq'].includes(mini.type)){ if(e.repeat) return; specialInput(k); }
+});
+
+/* ============================ RESULTS ============================ */
+function endMatch(){
+  if(!M || M.phase==='over') return;
+  M.phase='over'; mini=null;
+  const diff = r1(M.pTea-M.cTea);
+  let outcome = diff>0?'win':diff<0?'lose':'tie';
+  setAnim('p', outcome==='win'?'cheer':outcome==='lose'?'sad':'');
+  setAnim('c', outcome==='lose'?'cheer':outcome==='win'?'sad':'');
+  let reward=0; const unlocks=[];
+  if(outcome==='win'){
+    reward = Math.min(60, 25 + Math.round(diff*3)); save.money+=reward; save.wins++;
+    const sam = CHARS.find(c=>c.id==='unclesam');
+    if(save.wins===sam.unlock.wins && !save.chars.includes('unclesam')){ save.chars.push('unclesam'); unlocks.push('🎩 Uncle Sam unlocked for winning 10 matches!'); }
+  } else if(outcome==='tie'){ reward=10; save.money+=reward; }
+  persist();
+  music.volume = save.musicVol*0.35;
+  setTimeout(()=>{
+    sfx(outcome==='lose'?'lose':'win');
+    const rb=$('#resBanner'); rb.className='resBanner '+outcome;
+    rb.textContent = outcome==='win'?'YOU WON, ENJOY THE FREE COUNTRY!':outcome==='lose'?'YOU LOST, ENJOY THE FREE COUNTRY YOU BIG LOSER!':"IT'S A TIE! THE TEA IS SHARED EQUALLY!";
+    $('#resScores').innerHTML='<div>'+M.P.name+' (You)<b>'+fmtTea(M.pTea)+'</b>tea</div><div>'+M.C.name+' (CPU)<b>'+fmtTea(M.cTea)+'</b>tea</div>';
+    $('#resReward').innerHTML = (reward?'💰 +$'+reward+' earned! ':'No dollars this time. ')+'You now have <b>$'+save.money+'</b> and <b>'+save.wins+'</b> wins.'+
+      (unlocks.length?'<br>'+unlocks.map(u=>'<span class="unlockNote">'+u+'</span>').join(''):'');
+    $('#learn').innerHTML = learnHTML(M.S);
+    updateWallet();
+    show('results');
+  },1600);
+}
+function learnHTML(S){
+  return '<h3>📜 What Did You Learn?</h3>'+
+  '<p><b>The Boston Tea Party (1773):</b> The colonists were angry about being taxed by the British Parliament, where they had no representatives — "no taxation without representation!" On December 16, 1773, the Sons of Liberty, some of them in disguise, dumped 342 chests of British East India Company tea into Boston Harbor. Britain answered with harsh laws the colonists called the Intolerable Acts.</p>'+
+  '<p><b>The Founding Fathers:</b> George Washington led the Continental Army. Thomas Jefferson was the main writer of the Declaration of Independence (1776). Benjamin Franklin convinced France to join the war on the American side, and John Adams was one of the loudest voices for independence. Later, Washington, Adams and Jefferson became the first three presidents.</p>'+
+  '<p><b>How the war ended:</b> After the big American and French victory at Yorktown in 1781, peace talks began. The <b>Treaty of Paris</b> was signed on September 3, 1783 by Benjamin Franklin, John Adams and John Jay. In it, Britain recognized the United States as a free and independent country.</p>'+
+  '<p class="fact">📍 '+S.name+': '+S.fact+'</p>'+
+  '<p style="font-size:14px"><i>Time-travel note: the presidents from the 1900s and 2000s (and a few other guys) were not really there in 1783 — and as far as historians know, nobody ever held a tea-drinking contest!</i></p>';
+}
+$('#rematchBtn').onclick=()=>{ sfx('click'); startMatch(); };
+$('#toSelectBtn').onclick=()=>{ sfx('click'); M=null; playMusic('boston_1700s',.6); buildSelect(); show('select'); };
+</script>
+</body>
+</html>
